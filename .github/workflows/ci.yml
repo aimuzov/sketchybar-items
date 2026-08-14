@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: lua on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install lua
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y lua5.4
+            sudo ln -sf "$(command -v lua5.4)" /usr/local/bin/lua
+            sudo ln -sf "$(command -v luac5.4)" /usr/local/bin/luac
+          else
+            brew install lua
+          fi
+
+      - name: Report the version under test
+        run: lua -v
+
+      - name: Check the syntax of every file
+        run: find . -name '*.lua' -exec luac -p {} +
+
+      # sketchybar and every tool the items watch are stubbed, so nothing is installed here
+      - name: Run the tests
+        run: lua tests/run.lua
