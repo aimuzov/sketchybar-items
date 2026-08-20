@@ -100,6 +100,7 @@ local items = {
 	{ name = "yabai_window", needs = { "yabai", "jq" } },
 	{ name = "yabai_spaces", needs = { "yabai", "jq" } },
 	{ name = "tailscale", needs = { "tailscale", "jq" } },
+	{ name = "caffeinate", needs = { "caffeinate" } },
 }
 
 for _, item in ipairs(items) do

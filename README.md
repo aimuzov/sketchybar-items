@@ -18,6 +18,7 @@ into a bar you already have.
 | `items/yabai_window` | floating, zoomed, or "2 / 4" for a window in a stack | `yabai`, `jq` |
 | `items/yabai_spaces` | one entry per space with the apps on it, clickable | `yabai`, `jq` |
 | `items/tailscale` | whether tailscale is up, down or waiting for a login | `tailscale`, `jq` |
+| `items/caffeinate` | whether the display is being kept awake; click to toggle | `caffeinate` |
 
 **An item whose tools are missing does not draw anything.** It returns `false` instead of raising,
 so a config can require it unconditionally: a machine without skhd simply gets a shorter bar, not a

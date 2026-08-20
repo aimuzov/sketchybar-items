@@ -6,8 +6,9 @@ A collection of self-contained items for sketchybar on SbarLua. Not a bar config
 under `items/` adds one item to a bar the user already has, and can be copied out on its own.
 
 The items were extracted from a personal sketchybar config; the ones kept are those with no obvious
-equivalent elsewhere (skhd mode, SketchyVim mode, yabai window state), plus the two that carry
-non-trivial detail (spaces with app glyphs, tailscale state).
+equivalent elsewhere (skhd mode, SketchyVim mode, yabai window state), plus the ones that carry
+non-trivial detail: spaces with app glyphs, tailscale state, and a caffeinate toggle that kills its
+own process rather than every caffeinate on the machine.
 
 ## Layout
 
