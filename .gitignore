@@ -1,2 +1,4 @@
 NEXT-STEPS.md
 .DS_Store
+.claude/settings.local.json
+.claude/plans/
