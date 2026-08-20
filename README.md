@@ -1,8 +1,9 @@
 # sketchybar-items
 
 Ready-made items for [sketchybar](https://github.com/FelixKratz/SketchyBar) on
-[SbarLua](https://github.com/FelixKratz/SbarLua) — the ones that are hard to find elsewhere:
-the current skhd mode, the SketchyVim mode, what yabai is doing with the focused window.
+[SbarLua](https://github.com/FelixKratz/SbarLua) — the ones that are hard to find elsewhere (the
+current skhd mode, the SketchyVim mode, what yabai is doing with the focused window) next to the
+everyday clock and battery, so a bar can be built out of these alone.
 
 This is not a bar configuration. Every file under `items/` is one self-contained item that you drop
 into a bar you already have.
@@ -19,10 +20,13 @@ into a bar you already have.
 | `items/yabai_spaces` | one entry per space with the apps on it, clickable | `yabai`, `jq` |
 | `items/tailscale` | whether tailscale is up, down or waiting for a login | `tailscale`, `jq` |
 | `items/caffeinate` | whether the display is being kept awake; click to toggle | `caffeinate` |
+| `items/battery` | charge, and whether it is on the charger | `pmset` |
+| `items/datetime` | the date and the time | — |
 
 **An item whose tools are missing does not draw anything.** It returns `false` instead of raising,
 so a config can require it unconditionally: a machine without skhd simply gets a shorter bar, not a
-broken one, and not a badge stuck on its "unknown" icon.
+broken one, and not a badge stuck on its "unknown" icon. `items/datetime` is the one exception —
+it watches nothing, so it has nothing to step aside for and always draws.
 
 ## Install
 
@@ -63,24 +67,50 @@ return {
 Whatever it names is merged over the defaults; everything it leaves out keeps the default value.
 See `config.example.lua`.
 
+## Events
+
+Almost nothing here is polled. Each item subscribes to what tells it that something changed, and
+declares that event itself when it loads:
+
+| Event | Listened to by | Comes from |
+| --- | --- | --- |
+| `window_focus` | `yabai_window`, `svim_mode`, `input` | a yabai signal the item installs for itself |
+| `svim_update` | `svim_mode`, `input` | SketchyVim, which triggers it on its own |
+| `keyboard_layout_change` | `keyboard_layout`, `input` | a macOS notification sketchybar subscribes to |
+| `space_change`, `space_windows_change` | `yabai_spaces` | sketchybar's own events |
+| `skhd_mode_update` | `skhd_mode` | **your `skhdrc`** — see below |
+| `tailscale_status_update` | `tailscale` | **whatever you use to toggle the connection** |
+
+The last two are the only ones you have to wire up.
+
+**skhd** has no idea a bar exists, so every mode has to say so:
+
+```
+:: window @ : sketchybar --trigger skhd_mode_update MODE=window
+:: default  : sketchybar --trigger skhd_mode_update MODE=
+```
+
+**tailscale** is polled every routine tick, which is enough to notice a change but not to make a
+toggle feel immediate. If you bring the connection up and down from a script, end it with:
+
+```sh
+sketchybar --trigger tailscale_status_update
+```
+
+**window_focus** needs nothing from you. A focus change becomes a sketchybar event only through
+`yabai -m signal --add event=window_focused`, and the items that need it install that signal
+themselves. It carries the label `sketchybar_window_focus`, so a bar reload replaces it rather
+than adding a second copy.
+
+Without yabai those items still load. `yabai_window` returns `false`, and the mode indicators
+redraw a keystroke later than they would otherwise.
+
 ## Notes worth knowing
 
 - **PATH.** launchd starts sketchybar with homebrew and the system directories only, so tools
   installed anywhere else are invisible to it — the tailscale CLI in `/usr/local/bin`, anything
   under mise. `helpers.lua` puts a fuller PATH in front of every command it runs, which is why the
   items can find these without hardcoded paths.
-- **skhd and SketchyVim push, they are not polled.** Both items listen for an event. For skhd, add
-  the trigger to your modes in `skhdrc`:
-
-  ```
-  :: window @ : sketchybar --trigger skhd_mode_update MODE=window
-  :: default  : sketchybar --trigger skhd_mode_update MODE=
-  ```
-
-  SketchyVim triggers `svim_update` itself.
-- **The keyboard layout is event-driven too.** macOS posts
-  `AppleSelectedInputSourcesChangedNotification`, which sketchybar subscribes to directly; nothing
-  runs on a timer.
 - **App glyphs need a font.** `items/yabai_spaces` draws windows with
   [sketchybar-app-font](https://github.com/kvndrsslr/sketchybar-app-font). Without it installed the
   space falls back to the label yabai gave it, instead of a row of tofu boxes.

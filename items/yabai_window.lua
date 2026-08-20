@@ -20,6 +20,13 @@ local icons = {
 	float = "􀢌",
 }
 
+-- Nothing in yabai reports a focus change to sketchybar on its own, so the item asks
+-- for the signal that feeds it. See README: window_focus.
+if helpers.once("event:window_focus") then
+	sbar.add("event", "window_focus")
+	helpers.ensure_yabai_signal("window_focused", "window_focus")
+end
+
 local yabai = sbar.add("item", {
 	display = "active",
 	icon = { width = 0 },

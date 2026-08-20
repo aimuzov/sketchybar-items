@@ -51,6 +51,45 @@ function M.has_all(cmds)
 	return true
 end
 
+-- Items are copied one at a time, so whatever an item needs declared — an event, a
+-- yabai signal — it has to declare itself. Several items want the same one and they
+-- share a single Lua state, so the first one through does the work for the rest.
+local done = {}
+
+function M.once(key)
+	if done[key] then
+		return false
+	end
+	done[key] = true
+	return true
+end
+
+-- window_focus is not a sketchybar event but a yabai signal: nothing triggers it until
+-- yabai is told to, which is why the item asks for its own signal instead of expecting
+-- a line in the user's yabairc.
+--
+-- The label is removed before it is added because yabai keeps duplicates: otherwise
+-- every reload of the bar would stack another copy of the signal, and one focus change
+-- would fire the event as many times as the bar had been reloaded.
+function M.ensure_yabai_signal(event, trigger)
+	if not M.has("yabai") then
+		return false
+	end
+
+	local label = "sketchybar_" .. trigger
+	local add = ("yabai -m signal --add event=%s label=%s action='sketchybar --trigger %s'"):format(
+		event,
+		label,
+		trigger
+	)
+
+	-- The remove silences itself: on the first run there is no such label, and the
+	-- 2>/dev/null safe_exec appends lands on the last command of the list, not this one
+	M.safe_exec("yabai -m signal --remove " .. label .. " 2>/dev/null; " .. add)
+
+	return true
+end
+
 function M.has_font(name)
 	local found = M.safe_exec(
 		"ls ~/Library/Fonts /Library/Fonts /System/Library/Fonts 2>/dev/null | grep -qi '" .. name .. "' && echo yes"

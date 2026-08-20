@@ -68,6 +68,13 @@ local function stub_helpers(installed)
 		has_font = function()
 			return true
 		end,
+		-- Whoever asks first gets to declare the event or the yabai signal
+		once = function()
+			return true
+		end,
+		ensure_yabai_signal = function()
+			return true
+		end,
 		-- Enough for the queries the items make at load time
 		safe_exec = function(cmd)
 			if cmd:match("length") then
@@ -101,6 +108,7 @@ local items = {
 	{ name = "yabai_spaces", needs = { "yabai", "jq" } },
 	{ name = "tailscale", needs = { "tailscale", "jq" } },
 	{ name = "caffeinate", needs = { "caffeinate" } },
+	{ name = "battery", needs = { "pmset" } },
 }
 
 for _, item in ipairs(items) do
@@ -113,6 +121,14 @@ for _, item in ipairs(items) do
 	local ok_bare, result_bare, drawn_bare = load_item(item.name, {})
 	check(item.name .. " steps aside when nothing it needs is installed", ok_bare and result_bare == false)
 	check(item.name .. " adds nothing to the bar without its tools", ok_bare and #drawn_bare == 0)
+end
+
+-- An item that watches nothing has no second direction to test: there is no tool for
+-- it to miss, so it draws whatever it is given
+for _, name in ipairs({ "datetime" }) do
+	local ok, result, drawn = load_item(name, {})
+	check(name .. " loads with no tools installed at all", ok and result ~= nil and result ~= false)
+	check(name .. " adds something to the bar anyway", ok and #drawn > 0)
 end
 
 -- The combined item is the one that has to survive half of its tools missing

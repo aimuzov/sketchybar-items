@@ -46,6 +46,13 @@ local svim_colors = {
 
 sbar.add("event", "keyboard_layout_change", "AppleSelectedInputSourcesChangedNotification")
 
+-- The SketchyVim half has to be redrawn when the focus moves to another text field,
+-- and yabai is what notices that. See README: window_focus.
+if has_svim and helpers.once("event:window_focus") then
+	sbar.add("event", "window_focus")
+	helpers.ensure_yabai_signal("window_focused", "window_focus")
+end
+
 local input = sbar.add("item", {
 	display = "active",
 	position = "right",

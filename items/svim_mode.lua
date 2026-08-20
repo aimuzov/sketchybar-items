@@ -30,6 +30,14 @@ local mode_colors = {
 	["_"] = colors.magenta,
 }
 
+-- The mode belongs to the focused text field, so it has to be redrawn when the focus
+-- moves. yabai is what notices that; without it the item is still correct, just late
+-- by one keystroke. See README: window_focus.
+if helpers.once("event:window_focus") then
+	sbar.add("event", "window_focus")
+	helpers.ensure_yabai_signal("window_focused", "window_focus")
+end
+
 local svim = sbar.add("item", {
 	width = 30,
 	padding_left = 0,

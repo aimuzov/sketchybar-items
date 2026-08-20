@@ -5,16 +5,22 @@
 A collection of self-contained items for sketchybar on SbarLua. Not a bar configuration: each file
 under `items/` adds one item to a bar the user already has, and can be copied out on its own.
 
-The items were extracted from a personal sketchybar config; the ones kept are those with no obvious
-equivalent elsewhere (skhd mode, SketchyVim mode, yabai window state), plus the ones that carry
-non-trivial detail: spaces with app glyphs, tailscale state, and a caffeinate toggle that kills its
-own process rather than every caffeinate on the machine.
+The items were extracted from a personal sketchybar config. The line is what an item is worth
+outside that config: anything another bar could use lives here, and what stays behind is the bar
+itself — its height and position, the palette, the order the items are required in.
+
+Most of these have no obvious equivalent elsewhere (skhd mode, SketchyVim mode, yabai window
+state) or carry detail worth keeping: spaces with app glyphs, tailscale state, a caffeinate toggle
+that kills its own process rather than every caffeinate on the machine. The clock and the battery
+are ordinary by comparison, and they are here so that a bar can be built out of this repository
+alone instead of half of it.
 
 ## Layout
 
 ```
 items/            one file per item, each guarded by its own dependency check
-helpers.lua       safe_exec / has / bin / has_all / has_font / wait_for_yabai
+helpers.lua       safe_exec / has / bin / has_all / has_font / wait_for_yabai / once /
+                  ensure_yabai_signal
 theme.lua         default palette, merged with the user's config.lua if there is one
 config.example.lua  what a user config may override
 tests/run.lua     loads every item against stubbed sketchybar and helpers
@@ -25,8 +31,12 @@ tests/run.lua     loads every item against stubbed sketchybar and helpers
 1. `require("sketchybar")`, `require("helpers")`, and `require("theme")` when it needs colours.
 2. Check its tools first, and `return false` when they are missing — **not** `nil`: a module that
    returns nil makes `require` hand back `true`, which reads as success. Returning false lets a
-   config write `require("items.x")` unconditionally and still test the result.
-3. Add its item, subscribe, `return` the item.
+   config write `require("items.x")` unconditionally and still test the result. An item that
+   watches nothing — `datetime` is the only one — has no check to make and always draws.
+3. Declare what it needs before it can be told anything: a custom event through
+   `sbar.add("event", ...)`, a yabai signal through `helpers.ensure_yabai_signal`. Both go behind
+   `helpers.once`, since several items ask for the same ones.
+4. Add its item, subscribe, `return` the item.
 
 ## Conventions
 
@@ -50,6 +60,10 @@ tests/run.lua     loads every item against stubbed sketchybar and helpers
   zero spaces and stays that way until a reload.
 - **App glyphs are a font, not text.** Without sketchybar-app-font installed every window renders as
   a tofu box, so `yabai_spaces` checks for the font and falls back to the space label.
+- **yabai keeps duplicate signals.** Adding the same signal twice gives two of them, and the bar is
+  reloaded often, so `helpers.ensure_yabai_signal` removes its label before adding it.
+- **`safe_exec` collapses whitespace** on the way out (`gsub("%s+", "")`). Anything matched against
+  its result has to be matched without the spaces: pmset's "AC Power" arrives as `ACPower`.
 
 ## Testing
 

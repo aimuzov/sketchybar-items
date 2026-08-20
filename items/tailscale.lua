@@ -20,6 +20,10 @@ local icons = {
 	Unknown = "􀧸",
 }
 
+if helpers.once("event:tailscale_status_update") then
+	sbar.add("event", "tailscale_status_update")
+end
+
 local tailscale = sbar.add("item", {
 	padding_right = 0,
 	position = "right",
