@@ -45,6 +45,21 @@ helpers.wait_for_yabai()
 local count = tonumber(helpers.safe_exec("yabai -m query --spaces | jq 'length'")) or 0
 local spaces = {}
 
+-- Asked for once per space and kept, the way helpers.bin keeps its lookups: a label is
+-- only wanted for an empty space, and the query costs two processes in the bar's own
+-- event loop. Renaming a space needs a reload to show up, which is true of adding one
+-- anyway — the count above is read at start-up too.
+local labels = {}
+
+local function space_label(index)
+	if labels[index] == nil then
+		-- query --spaces answers with an array in space order, so space N sits at N - 1
+		labels[index] = helpers.safe_exec("yabai -m query --spaces | jq -r '.[" .. (index - 1) .. "].label'")
+			or false
+	end
+	return labels[index] or nil
+end
+
 for index = 1, count do
 	local space = sbar.add("space", {
 		icon = { padding_left = 6, string = "" },
@@ -70,7 +85,14 @@ for index = 1, count do
 		sbar.exec("yabai -m space " .. op .. " " .. ENV.SID)
 	end)
 
-	space:subscribe("space_windows_change", function(ENV)
+end
+
+-- sketchybar sends space_windows_change once per space, and every subscriber gets all
+-- of them: with the handler on each entry a single change woke it N² times, N of those
+-- for the entry it was attached to. The payload names the space, so one subscription
+-- reaches every entry — and the first one carries it for the rest.
+if spaces[1] then
+	spaces[1]:subscribe("space_windows_change", function(ENV)
 		local item = spaces[ENV.INFO.space]
 
 		if not item then
@@ -88,9 +110,7 @@ for index = 1, count do
 
 		-- An empty space says what it is for instead of showing nothing
 		if apps == "" then
-			-- query --spaces answers with an array in space order, so space N sits at N - 1
-			local label =
-				helpers.safe_exec("yabai -m query --spaces | jq -r '.[" .. (ENV.INFO.space - 1) .. "].label'")
+			local label = space_label(ENV.INFO.space)
 
 			if label then
 				icon = icon .. " " .. label
