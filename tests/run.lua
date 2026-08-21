@@ -106,7 +106,6 @@ local items = {
 	{ name = "input", needs = { "im-select", "svim" } },
 	{ name = "yabai_window", needs = { "yabai", "jq" } },
 	{ name = "yabai_spaces", needs = { "yabai", "jq" } },
-	{ name = "tailscale", needs = { "tailscale", "jq" } },
 	{ name = "caffeinate", needs = { "caffeinate" } },
 	{ name = "battery", needs = { "pmset" } },
 }

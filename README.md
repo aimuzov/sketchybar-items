@@ -18,7 +18,6 @@ into a bar you already have.
 | `items/input` | layout and SketchyVim mode in one badge | `im-select` and/or `svim` |
 | `items/yabai_window` | floating, zoomed, or "2 / 4" for a window in a stack | `yabai`, `jq` |
 | `items/yabai_spaces` | one entry per space with the apps on it, clickable | `yabai`, `jq` |
-| `items/tailscale` | whether tailscale is up, down or waiting for a login | `tailscale`, `jq` |
 | `items/caffeinate` | whether the display is being kept awake; click to toggle | `caffeinate` |
 | `items/battery` | charge, and whether it is on the charger | `pmset` |
 | `items/datetime` | the date and the time | — |
@@ -45,7 +44,7 @@ require("items.yabai_spaces")
 require("items.skhd_mode")
 require("items.yabai_window")
 
-require("items.tailscale")
+require("items.battery")
 require("items.input")
 ```
 
@@ -79,22 +78,13 @@ declares that event itself when it loads:
 | `keyboard_layout_change` | `keyboard_layout`, `input` | a macOS notification sketchybar subscribes to |
 | `space_change`, `space_windows_change` | `yabai_spaces` | sketchybar's own events |
 | `skhd_mode_update` | `skhd_mode` | **your `skhdrc`** — see below |
-| `tailscale_status_update` | `tailscale` | **whatever you use to toggle the connection** |
 
-The last two are the only ones you have to wire up.
-
-**skhd** has no idea a bar exists, so every mode has to say so:
+The last one is the only one you have to wire up. skhd has no idea a bar exists, so every mode has
+to say so:
 
 ```
 :: window @ : sketchybar --trigger skhd_mode_update MODE=window
 :: default  : sketchybar --trigger skhd_mode_update MODE=
-```
-
-**tailscale** is polled every routine tick, which is enough to notice a change but not to make a
-toggle feel immediate. If you bring the connection up and down from a script, end it with:
-
-```sh
-sketchybar --trigger tailscale_status_update
 ```
 
 **window_focus** needs nothing from you. A focus change becomes a sketchybar event only through
@@ -108,9 +98,9 @@ redraw a keystroke later than they would otherwise.
 ## Notes worth knowing
 
 - **PATH.** launchd starts sketchybar with homebrew and the system directories only, so tools
-  installed anywhere else are invisible to it — the tailscale CLI in `/usr/local/bin`, anything
-  under mise. `helpers.lua` puts a fuller PATH in front of every command it runs, which is why the
-  items can find these without hardcoded paths.
+  installed anywhere else are invisible to it — anything under `/usr/local/bin`, anything under
+  mise. `helpers.lua` puts a fuller PATH in front of every command it runs, which is why the items
+  can find these without hardcoded paths.
 - **App glyphs need a font.** `items/yabai_spaces` draws windows with
   [sketchybar-app-font](https://github.com/kvndrsslr/sketchybar-app-font). Without it installed the
   space falls back to the label yabai gave it, instead of a row of tofu boxes.

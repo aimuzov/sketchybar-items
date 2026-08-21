@@ -1,8 +1,8 @@
 local M = {}
 
 -- launchd starts sketchybar with a short PATH — homebrew plus the system directories —
--- so anything installed elsewhere is invisible to io.popen: the tailscale CLI lives in
--- /usr/local/bin, mise and asdf keep their tools under their own prefixes. Lua cannot
+-- so anything installed elsewhere is invisible to io.popen: /usr/local/bin is not
+-- on it, and mise and asdf keep their tools under their own prefixes. Lua cannot
 -- export a variable into its own environment, so the PATH travels as a prefix on every
 -- command instead.
 local search_path = table.concat({
