@@ -13,7 +13,7 @@ local helpers = require("helpers")
 local theme = require("theme")
 
 if not helpers.has("skhd") then
-	return false -- see README: an item with a missing tool returns false, not an error
+	return false -- a nil result comes back from require as true, i.e. as success
 end
 
 local colors = theme.colors
@@ -35,7 +35,11 @@ local mode_colors = {
 	command = colors.red,
 }
 
-sbar.add("event", "skhd_mode_update")
+-- Nothing else listens for this one, but the guard keeps every declaration in the
+-- repository looking the same
+if helpers.once("event:skhd_mode_update") then
+	sbar.add("event", "skhd_mode_update")
+end
 
 local skhd = sbar.add("item", {
 	display = "active",

@@ -10,7 +10,7 @@ local helpers = require("helpers")
 local theme = require("theme")
 
 if not helpers.has("im-select") then
-	return false -- see README: an item with a missing tool returns false, not an error
+	return false -- a nil result comes back from require as true, i.e. as success
 end
 
 local colors = theme.colors
@@ -38,7 +38,11 @@ local function update()
 	})
 end
 
-sbar.add("event", "keyboard_layout_change", "AppleSelectedInputSourcesChangedNotification")
+-- input asks for the same event, so whichever of the two loads first declares it
+if helpers.once("event:keyboard_layout_change") then
+	sbar.add("event", "keyboard_layout_change", "AppleSelectedInputSourcesChangedNotification")
+end
+
 keyboard_layout:subscribe({ "forced", "keyboard_layout_change" }, update)
 
 return keyboard_layout

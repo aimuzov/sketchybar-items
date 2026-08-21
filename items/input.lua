@@ -1,9 +1,9 @@
 -- Keyboard layout and SketchyVim mode in one badge.
 --
 -- Both answer the same question — what happens when I press a key — so they share a
--- slot: the layout is shown on its own, and the moment SketchyVim leaves insert mode
--- the badge takes the mode's colour and icon. In command mode the label carries the
--- command line being typed, next to the layout.
+-- slot: with no mode reported the layout stands alone, and as soon as SketchyVim
+-- names one the badge takes that mode's colour and icon. In command mode the label
+-- carries the command line being typed, next to the layout.
 --
 -- Either half may be missing. With only im-select installed this is the layout
 -- indicator; with only SketchyVim it is the mode indicator; with neither the item
@@ -16,7 +16,7 @@ local has_layout = helpers.has("im-select")
 local has_svim = helpers.has("svim")
 
 if not has_layout and not has_svim then
-	return false -- see README: an item with a missing tool returns false, not an error
+	return false -- a nil result comes back from require as true, i.e. as success
 end
 
 local colors = theme.colors
@@ -44,7 +44,11 @@ local svim_colors = {
 	["_"] = colors.magenta,
 }
 
-sbar.add("event", "keyboard_layout_change", "AppleSelectedInputSourcesChangedNotification")
+-- keyboard_layout asks for the same event, and adding it twice is what the once guard
+-- is for. Behind has_layout as well: with no im-select there is no layout half to feed.
+if has_layout and helpers.once("event:keyboard_layout_change") then
+	sbar.add("event", "keyboard_layout_change", "AppleSelectedInputSourcesChangedNotification")
+end
 
 -- The SketchyVim half has to be redrawn when the focus moves to another text field,
 -- and yabai is what notices that. See README: window_focus.
