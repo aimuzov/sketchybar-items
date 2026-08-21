@@ -2,9 +2,9 @@
 --
 -- The defaults below are Catppuccin Macchiato and work on their own — an item can be
 -- required into a bare config and will look right. To use your own palette, put a
--- `config.lua` next to your sketchybarrc that returns a table with `colors` and/or
--- `font`; whatever it names is merged over these defaults, and anything it leaves out
--- keeps the value below.
+-- `config.lua` next to your sketchybarrc that returns any of the keys below; whatever
+-- it names is merged over these defaults, and anything it leaves out keeps the value
+-- below.
 local defaults = {
 	font = "SF Pro",
 	app_font = "Sketchybar App Font",

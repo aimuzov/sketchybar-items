@@ -11,12 +11,12 @@ local helpers = require("helpers")
 local colors = require("theme").colors
 
 if not helpers.has("caffeinate") then
-	return false -- see README: a missing tool returns false, not an error
+	return false -- a nil result comes back from require as true, i.e. as success
 end
 
 local pidfile = "/tmp/sketchybar-caffeinate-" .. (os.getenv("USER") or "shared") .. ".pid"
 
--- -di keeps display and system awake; `$!` is the PID just backgrounded
+-- -di keeps both the display and the system awake
 local start_cmd = helpers.bin("caffeinate") .. " -di & echo $! > " .. pidfile
 local stop_cmd = 'kill "$(cat ' .. pidfile .. ' 2>/dev/null)" 2>/dev/null; rm -f ' .. pidfile
 

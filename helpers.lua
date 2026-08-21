@@ -1,10 +1,8 @@
 local M = {}
 
--- launchd starts sketchybar with a short PATH — homebrew plus the system directories —
--- so anything installed elsewhere is invisible to io.popen: /usr/local/bin is not
--- on it, and mise and asdf keep their tools under their own prefixes. Lua cannot
--- export a variable into its own environment, so the PATH travels as a prefix on every
--- command instead.
+-- launchd gives sketchybar homebrew and the system directories only, so tools kept
+-- anywhere else — /usr/local/bin, the mise shims — are invisible to io.popen. Lua
+-- cannot export into its own environment, so the PATH rides in front of every command.
 local search_path = table.concat({
 	"/opt/homebrew/bin",
 	"/opt/homebrew/sbin",
@@ -24,6 +22,8 @@ function M.safe_exec(cmd)
 	if not result or result:match("^%s*$") then
 		return nil
 	end
+	-- Every space is squeezed out of the answer, so a caller matching on it has to match
+	-- the squeezed form: pmset's "AC Power" arrives as "ACPower".
 	return (result:gsub("%s+", ""))
 end
 
@@ -32,6 +32,8 @@ end
 local resolved = {}
 
 function M.bin(cmd)
+	-- false is what "asked about and not found" looks like, since nil already means
+	-- "never asked".
 	if resolved[cmd] == nil then
 		resolved[cmd] = M.safe_exec("command -v " .. cmd) or false
 	end

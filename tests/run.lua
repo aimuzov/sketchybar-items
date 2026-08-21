@@ -68,14 +68,15 @@ local function stub_helpers(installed)
 		has_font = function()
 			return true
 		end,
-		-- Whoever asks first gets to declare the event or the yabai signal
+		-- Always the first caller: every item is loaded on its own, so nothing else has
+		-- taken the event or the signal.
 		once = function()
 			return true
 		end,
 		ensure_yabai_signal = function()
 			return true
 		end,
-		-- Enough for the queries the items make at load time
+		-- Only the space count is read as a number, the rest just has to come back non-nil.
 		safe_exec = function(cmd)
 			if cmd:match("length") then
 				return "3"
@@ -98,7 +99,6 @@ local function load_item(name, installed)
 	return ok, result, added
 end
 
--- name → the tools it needs before it will draw anything
 local items = {
 	{ name = "skhd_mode", needs = { "skhd" } },
 	{ name = "svim_mode", needs = { "svim" } },
@@ -138,6 +138,8 @@ end
 
 -- theme.lua merges a user config over the defaults rather than replacing them
 package.loaded["theme"] = nil
+-- There is no config.lua in the repository, so the user config is put where require
+-- would have left it.
 package.loaded["config"] = { colors = { red = 0xdeadbeef } }
 local theme = require("theme")
 check("a user colour wins over the default", theme.colors.red == 0xdeadbeef)

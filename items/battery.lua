@@ -8,7 +8,7 @@ local helpers = require("helpers")
 local colors = require("theme").colors
 
 if not helpers.has("pmset") then
-	return false -- see README: an item with a missing tool returns false, not an error
+	return false -- a nil result comes back from require as true, i.e. as success
 end
 
 local icons = {

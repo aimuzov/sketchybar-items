@@ -51,6 +51,15 @@ require("items.input")
 The order of the `require` calls is the order the items appear in the bar, left to right for
 `position = "left"` items and right to left for `position = "right"` ones.
 
+`helpers.lua` and `theme.lua` travel with the items: every item but `datetime` requires both of
+them by those names. If those names are already taken in your config, keep these in a directory
+of their own and put it in front of `package.path` instead of copying them next to your own files:
+
+```lua
+local vendor = os.getenv("HOME") .. "/.config/sketchybar/vendor"
+package.path = vendor .. "/?.lua;" .. vendor .. "/?/init.lua;" .. package.path
+```
+
 ## Colours
 
 `theme.lua` carries a full palette (Catppuccin Macchiato) so the items look right with no setup at
@@ -113,7 +122,8 @@ lua tests/run.lua
 
 The suite loads every item with `sketchybar` and `helpers` stubbed out, so it needs neither a
 running bar nor any of the tools the items watch. It checks both directions: that an item draws
-when its tools are there, and that it steps aside when they are not.
+when its tools are there, and that it steps aside when they are not. `items/datetime` has only the
+first direction to check, and `items/input` is loaded with each half of what it watches in turn.
 
 ## License
 

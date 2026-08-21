@@ -12,7 +12,7 @@ local helpers = require("helpers")
 local theme = require("theme")
 
 if not helpers.has_all({ "yabai", "jq" }) then
-	return false -- see README: an item with a missing tool returns false, not an error
+	return false -- a nil result comes back from require as true, i.e. as success
 end
 
 local colors = theme.colors
@@ -88,6 +88,7 @@ for index = 1, count do
 
 		-- An empty space says what it is for instead of showing nothing
 		if apps == "" then
+			-- query --spaces answers with an array in space order, so space N sits at N - 1
 			local label =
 				helpers.safe_exec("yabai -m query --spaces | jq -r '.[" .. (ENV.INFO.space - 1) .. "].label'")
 

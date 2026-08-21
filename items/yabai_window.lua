@@ -8,7 +8,7 @@ local helpers = require("helpers")
 local theme = require("theme")
 
 if not helpers.has_all({ "yabai", "jq" }) then
-	return false -- see README: an item with a missing tool returns false, not an error
+	return false -- a nil result comes back from require as true, i.e. as success
 end
 
 local colors = theme.colors
@@ -59,6 +59,7 @@ local function update()
 		if position and position > 0 then
 			icon.string = icons.stack
 			icon.color = colors.magenta
+			-- yabai has no stack count, so the total is the index of the last window in it
 			label.string = index .. " / " .. (window_prop("stack-index", "stack.last") or "")
 			label.width = 40
 		end

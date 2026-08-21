@@ -1,9 +1,7 @@
 -- The date and the time.
 --
 -- The only item here that watches nothing: os.date answers from the C library, so
--- there is no tool to look for and nothing to step aside for. Every other item in
--- this repository returns false when what it reports on is missing; this one has
--- no such case and always draws.
+-- there is no tool to look for, no check to make and nothing to step aside for.
 local sbar = require("sketchybar")
 
 local datetime = sbar.add("item", {
