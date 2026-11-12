@@ -17,7 +17,15 @@ jobs:
         os: [ubuntu-latest, macos-latest]
 
     steps:
+      - name: Reuse verified CI
+        id: verified
+        uses: aimuzov/infra-ci/reuse-check@v1
+        continue-on-error: true
+        with:
+          workflow: .github/workflows/ci.yml
+          matrix: ${{ toJSON(matrix) }}
       - uses: actions/checkout@v5
+        if: steps.verified.outputs.reused != 'true'
 
       - name: Install lua
         run: |
@@ -28,13 +36,28 @@ jobs:
           else
             brew install lua
           fi
+        if: steps.verified.outputs.reused != 'true'
 
       - name: Report the version under test
         run: lua -v
+        if: steps.verified.outputs.reused != 'true'
 
       - name: Check the syntax of every file
         run: find . -name '*.lua' -exec luac -p {} +
+        if: steps.verified.outputs.reused != 'true'
 
       # sketchybar and every tool the items watch are stubbed, so nothing is installed here
       - name: Run the tests
         run: lua tests/run.lua
+        if: steps.verified.outputs.reused != 'true'
+      - name: Record verified CI
+        if: github.event_name == 'pull_request' && steps.verified.outputs.reused != 'true'
+        uses: aimuzov/infra-ci/record-check@v1
+        continue-on-error: true
+        with:
+          workflow: .github/workflows/ci.yml
+          matrix: ${{ toJSON(matrix) }}
+permissions:
+  contents: read
+  actions: read
+  id-token: write
